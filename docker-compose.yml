@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: ./backend
+    container_name: healthcheck-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build: ./frontend
+    container_name: healthcheck-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL_EXTERNAL=http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

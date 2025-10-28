@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Check Web UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1em;
+        }
+
+        #pingButton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        #pingButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        #pingButton:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #pingButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .loading {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+
+        .status-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .status-message {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status-detail {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #856404;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Health Check</h1>
+        <p class="subtitle">Backend API Health Monitor</p>
+        
+        <button id="pingButton" onclick="pingBackend()">
+            Ping Backend
+        </button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Get backend URL from environment or use default
+        const BACKEND_URL = window.BACKEND_URL || 'http://localhost:5000';
+
+        async function pingBackend() {
+            const button = document.getElementById('pingButton');
+            const resultDiv = document.getElementById('result');
+            
+            // Disable button and show loading state
+            button.disabled = true;
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = `
+                <div class="spinner"></div>
+                <div class="status-message">Pinging backend...</div>
+            `;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <div class="status-icon">✅</div>
+                        <div class="status-message">${data.message}</div>
+                        <div class="status-detail">Status: ${data.status}</div>
+                        <div class="status-detail">Time: ${new Date(data.timestamp).toLocaleString()}</div>
+                    `;
+                } else {
+                    throw new Error('Backend returned an error');
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">❌</div>
+                    <div class="status-message">Backend Unreachable</div>
+                    <div class="status-detail">${error.message}</div>
+                    <div class="status-detail">Make sure the backend is running at ${BACKEND_URL}</div>
+                `;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // Optional: Ping on page load
+        // window.addEventListener('load', pingBackend);
+    </script>
+</body>
+</html>

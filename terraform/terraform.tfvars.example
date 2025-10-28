@@ -1,0 +1,14 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and fill in your actual values
+# Never commit terraform.tfvars to git!
+
+# Azure AD Configuration
+aad_client_id     = "your-azure-ad-client-id-here"
+aad_client_secret = "your-azure-ad-client-secret-here"
+tenant_id         = "your-azure-ad-tenant-id-here"
+
+# Optional: Override defaults
+# resource_group_name = "azuretest001"
+# location           = "eastus"
+# acr_name           = "azuretest001acr"
+# dns_prefix         = "azuretest001"

@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Classification System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Header Navigation */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        /* Page Views */
+        .page-view {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Production Dashboard */
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+        }
+
+        .btn-secondary:hover {
+            background: #653a8a;
+        }
+
+        /* Filter Buttons */
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0ff;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Classification Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .profile-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .profile-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+        }
+
+        .profile-item.hidden {
+            display: none;
+        }
+
+        .profile-photo {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .profile-initials {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .classification-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .badge-human {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-avatar {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-other {
+            background: #f44336;
+            color: white;
+        }
+
+        .badge-no_pic {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .badge-error {
+            background: #757575;
+            color: white;
+        }
+
+        /* Misclassification UI */
+        .misclassify-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .misclassify-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .misclassify-checkbox input {
+            cursor: pointer;
+        }
+
+        .correction-dropdown {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.85em;
+            background: #f9f9f9;
+        }
+
+        .correction-dropdown:disabled {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .corrected-label {
+            margin-top: 6px;
+            padding: 4px 8px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 0.75em;
+            color: #856404;
+            text-align: center;
+        }
+
+        /* Reports */
+        .report-header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 0;
+        }
+
+        .report-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .report-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+
+        .report-table th {
+            background: #f5f5f5;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .report-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #666;
+        }
+
+        .report-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .corrected-indicator {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        /* Loading and Status */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .status-detail {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Development Mode (Legacy) */
+        .dev-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .dev-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        #result.loading,
+        #result.success,
+        #result.error {
+            display: block;
+        }
+
+        #result.loading {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        #result.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        #result.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        #gallery {
+            margin-top: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>📊 Profile Classification System</h1>
+            <div class="nav-buttons">
+                <button class="nav-btn active" id="productionBtn" data-view="production">Production</button>
+                <button class="nav-btn" id="reportsBtn" data-view="reports">Reports</button>
+                <button class="nav-btn" id="developmentBtn" data-view="development">Development</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Production View -->
+        <div id="productionView" class="page-view active">
+            <div class="dashboard-card">
+                <h2>📈 52-Week Profile Picture Trends</h2>
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>🔍 Profile Classification</h2>
+                <div class="action-bar">
+                    <button class="btn" id="runClassificationBtn">
+                        Run Classification
+                    </button>
+                    <div class="filter-group" id="filterGroup" style="display: none;">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="human">Human</button>
+                        <button class="filter-btn" data-filter="avatar">Avatar</button>
+                        <button class="filter-btn" data-filter="other">Other</button>
+                        <button class="filter-btn" data-filter="no_pic">No Pic</button>
+                    </div>
+                </div>
+                <div id="classificationGallery" class="gallery-grid"></div>
+            </div>
+        </div>
+
+        <!-- Reports View -->
+        <div id="reportsView" class="page-view">
+            <div class="dashboard-card" style="margin-bottom: 40px;">
+                <h2>📋 Report Selection</h2>
+                <div class="action-bar">
+                    <button class="btn" id="nonHumanReportBtn">Non-Human Profiles Report</button>
+                    <button class="btn btn-secondary" id="misclassificationReportBtn">Misclassification Report</button>
+                </div>
+            </div>
+
+            <div id="reportContent"></div>
+        </div>
+
+        <!-- Development View (Legacy) -->
+        <div id="developmentView" class="page-view">
+            <div class="dev-container">
+                <h2>🔧 Development Tools</h2>
+                <p style="color: #666; margin-bottom: 30px;">Legacy testing interface for backend services</p>
+                
+                <div class="button-group">
+                    <button class="btn" id="checkHealthBtn">Check Backend Health</button>
+                    <button class="btn" id="countUsersBtn">Count Tenant Users</button>
+                    <button class="btn" id="loadGalleryBtn">Show Profile Gallery</button>
+                    <button class="btn" id="testClassifyBtn">Test Classification</button>
+                </div>
+
+                <div id="result"></div>
+                <div id="gallery"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="status-message">Processing...</div>
+            <div class="status-detail">This may take a moment</div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let classificationData = [];
+        let weeklyChart = null;
+        let corrections = {};
+
+        // View Switcher
+        function switchView(view) {
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(view + 'Btn').classList.add('active');
+
+            // Update views
+            document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
+            document.getElementById(view + 'View').classList.add('active');
+
+            // Initialize view-specific content
+            if (view === 'production' && !weeklyChart) {
+                loadWeeklyChart();
+            }
+        }
+
+        // Load and display weekly chart
+        async function loadWeeklyChart() {
+            try {
+                console.log('Loading weekly chart...');
+                
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js is not loaded!');
+                    const chartContainer = document.getElementById('weeklyChart')?.parentElement;
+                    if (chartContainer) {
+                        chartContainer.innerHTML = '<p style="color: #f44336; padding: 20px; text-align: center;">Chart.js library failed to load. Please refresh the page.</p>';
+                    }
+                    return;
+                }
+                
+                const response = await fetch('/api/analytics/weekly');
+                console.log('Analytics response:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Analytics data received:', result.data?.length, 'weeks');
+                
+                const canvas = document.getElementById('weeklyChart');
+                if (!canvas) {
+                    console.error('Canvas element not found!');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Could not get 2D context!');
+                    return;
+                }
+                
+                weeklyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: result.data.map(d => `Week ${d.week}`),
+                        datasets: [
+                            {
+                                label: 'Human',
+                                data: result.data.map(d => d.human),
+                                borderColor: '#4caf50',
+                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Avatar',
+                                data: result.data.map(d => d.avatar),
+                                borderColor: '#ff9800',
+                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Other',
+                                data: result.data.map(d => d.other),
+                                borderColor: '#f44336',
+                                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'No Pic',
+                                data: result.data.map(d => d.noPic),
+                                borderColor: '#9e9e9e',
+                                backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Profile Picture Classification Trends (52 Weeks)'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Profiles'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Week Number'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading chart:', error);
+                const chartContainer = document.getElementById('weeklyChart')?.parentElement;
+                if (chartContainer) {
+                    chartContainer.innerHTML = '<p style="color: #f44336; padding: 20px; text-align: center;">Failed to load analytics data: ' + error.message + '</p>';
+                }
+            }
+        }
+
+        // Run classification on all profiles
+        async function runClassification() {
+            const btn = document.getElementById('runClassificationBtn');
+            const gallery = document.getElementById('classificationGallery');
+            const filterGroup = document.getElementById('filterGroup');
+            const overlay = document.getElementById('loadingOverlay');
+            
+            console.log('Starting classification...');
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            overlay.classList.add('active');
+            gallery.innerHTML = '';
+            filterGroup.style.display = 'none';
+
+            try {
+                console.log('Fetching profiles for classification...');
+                const response = await fetch('/api/classify/all-profiles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                console.log('Classification response:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Received', result.users?.length, 'classified profiles');
+                classificationData = result.users;
+
+                // Display gallery
+                displayClassificationGallery(classificationData);
+                filterGroup.style.display = 'flex';
+
+            } catch (error) {
+                console.error('Error running classification:', error);
+                gallery.innerHTML = '<p style="color: #f44336; padding: 20px;">Failed to run classification: ' + error.message + '</p>';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Classification';
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Display classification gallery
+        function displayClassificationGallery(users) {
+            const gallery = document.getElementById('classificationGallery');
+            
+            gallery.innerHTML = users.map(user => {
+                const initials = user.displayName
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .substring(0, 2);
+
+                const classification = user.classification || 'no_pic';
+                const corrected = corrections[user.id];
+
+                let imageHtml = '';
+                if (user.hasPhoto) {
+                    imageHtml = `<img src="${user.photo}" alt="${user.displayName}" class="profile-photo" />`;
+                } else {
+                    imageHtml = `<div class="profile-initials">${initials}</div>`;
+                }
+
+                let correctedLabelHtml = '';
+                if (corrected) {
+                    correctedLabelHtml = `<div class="corrected-label">Corrected: ${corrected.correctedClassification}</div>`;
+                }
+
+                return `
+                    <div class="profile-item" data-classification="${classification}" data-user-id="${user.id}">
+                        ${imageHtml}
+                        <div class="profile-name">${user.displayName}</div>
+                        <span class="classification-badge badge-${classification}">${classification.replace('_', ' ')}</span>
+                        <div class="misclassify-section">
+                            <label class="misclassify-checkbox">
+                                <input type="checkbox" onchange="toggleMisclassify('${user.id}', '${classification}')">
+                                Misclassified
+                            </label>
+                            <select class="correction-dropdown" id="correction-${user.id}" disabled onchange="saveCorrection('${user.id}', '${classification}', this.value)">
+                                <option value="">Select correct class...</option>
+                                <option value="human">Human</option>
+                                <option value="avatar">Avatar</option>
+                                <option value="other">Other</option>
+                                <option value="no_pic">No Pic</option>
+                            </select>
+                            ${correctedLabelHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle misclassification dropdown
+        function toggleMisclassify(userId, originalClass) {
+            const checkbox = event.target;
+            const dropdown = document.getElementById(`correction-${userId}`);
+            dropdown.disabled = !checkbox.checked;
+            
+            if (!checkbox.checked) {
+                dropdown.value = '';
+                // Remove correction if unchecked
+                delete corrections[userId];
+            }
+        }
+
+        // Save correction
+        async function saveCorrection(userId, originalClass, correctedClass) {
+            if (!correctedClass) return;
+
+            try {
+                const response = await fetch('/api/corrections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        originalClassification: originalClass,
+                        correctedClassification: correctedClass
+                    })
+                });
+
+                const result = await response.json();
+                corrections[userId] = {
+                    originalClassification: originalClass,
+                    correctedClassification: correctedClass
+                };
+
+                // Update UI to show corrected label
+                const item = document.querySelector(`[data-user-id="${userId}"]`);
+                const existingLabel = item.querySelector('.corrected-label');
+                if (existingLabel) {
+                    existingLabel.textContent = `Corrected: ${correctedClass}`;
+                } else {
+                    const section = item.querySelector('.misclassify-section');
+                    section.innerHTML += `<div class="corrected-label">Corrected: ${correctedClass}</div>`;
+                }
+
+                console.log('Correction saved:', result);
+            } catch (error) {
+                console.error('Error saving correction:', error);
+                alert('Failed to save correction');
+            }
+        }
+
+        // Filter gallery
+        function filterGallery(filterType) {
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filterType) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter items
+            const items = document.querySelectorAll('.profile-item');
+            items.forEach(item => {
+                if (filterType === 'all') {
+                    item.classList.remove('hidden');
+                } else {
+                    const classification = item.getAttribute('data-classification');
+                    if (classification === filterType) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // Load non-human report
+        async function loadNonHumanReport() {
+            const reportContent = document.getElementById('reportContent');
+            const overlay = document.getElementById('loadingOverlay');
+            
+            overlay.classList.add('active');
+
+            try {
+                // Get non-human profiles from classification data
+                const nonHumanProfiles = classificationData.filter(user => {
+                    const classification = corrections[user.id]?.correctedClassification || user.classification;
+                    return classification !== 'human' && user.hasPhoto;
+                });
+
+                const totalProfiles = classificationData.length;
+
+                reportContent.innerHTML = `
+                    <div class="report-header">
+                        <h2>Non-Human Profiles Report</h2>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Profiles</span>
+                                <span class="stat-value">${totalProfiles}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Non-Human</span>
+                                <span class="stat-value">${nonHumanProfiles.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>Classification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${nonHumanProfiles.map(user => {
+                                const corrected = corrections[user.id];
+                                const classification = corrected ? corrected.correctedClassification : user.classification;
+                                const indicator = corrected ? ' <span class="corrected-indicator">*</span>' : '';
+                                
+                                return `
+                                    <tr>
+                                        <td>${user.displayName}</td>
+                                        <td>${user.userPrincipalName}</td>
+                                        <td>${classification.replace('_', ' ')}${indicator}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading report:', error);
+                reportContent.innerHTML = '<p style="color: #f44336; padding: 20px;">Failed to load report</p>';
+            } finally {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Load misclassification report
+        async function loadMisclassificationReport() {
+            const reportContent = document.getElementById('reportContent');
+            const overlay = document.getElementById('loadingOverlay');
+            
+            overlay.classList.add('active');
+
+            try {
+                const response = await fetch('/api/reports/misclassified');
+                const result = await response.json();
+
+                const totalProfiles = classificationData.length;
+                const misclassifiedCount = result.totalMisclassified;
+
+                reportContent.innerHTML = `
+                    <div class="report-header">
+                        <h2>Misclassification Report</h2>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Profiles</span>
+                                <span class="stat-value">${totalProfiles}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Misclassifications</span>
+                                <span class="stat-value">${misclassifiedCount}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Original Classification</th>
+                                <th>Corrected Classification</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${result.misclassifications.map(m => {
+                                const user = classificationData.find(u => u.id === m.userId);
+                                const userName = user ? user.displayName : m.userId;
+                                
+                                return `
+                                    <tr>
+                                        <td>${userName}</td>
+                                        <td>${m.originalClassification}</td>
+                                        <td>${m.correctedClassification}</td>
+                                        <td>${new Date(m.timestamp).toLocaleString()}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading report:', error);
+                reportContent.innerHTML = '<p style="color: #f44336; padding: 20px;">Failed to load report</p>';
+            } finally {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Development Mode Functions (Legacy)
+        async function checkHealth() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = '<div class="spinner"></div><div class="status-message">Checking backend health...</div>';
+
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">✅</div>
+                    <div class="status-message">Backend is healthy!</div>
+                    <div class="status-detail">TensorFlow: ${data.tensorflow_version} | Model: ${data.model_status}</div>
+                `;
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">❌</div>
+                    <div class="status-message">Health check failed</div>
+                    <div class="status-detail">${error.message}</div>
+                `;
+            }
+        }
+
+        async function countTenantUsers() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = '<div class="spinner"></div><div class="status-message">Counting users...</div>';
+
+            try {
+                const response = await fetch('/api/users/count');
+                const data = await response.json();
+                
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">👥</div>
+                    <div class="status-message">Total Users: ${data.count}</div>
+                `;
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">❌</div>
+                    <div class="status-message">Count failed</div>
+                    <div class="status-detail">${error.message}</div>
+                `;
+            }
+        }
+
+        async function loadGallery() {
+            const resultDiv = document.getElementById('result');
+            const galleryDiv = document.getElementById('gallery');
+            
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = '<div class="spinner"></div><div class="status-message">Loading gallery...</div>';
+            galleryDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/users/profiles');
+                const data = await response.json();
+
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <div class="status-message">Gallery Loaded</div>
+                    <div class="status-detail">Total: ${data.total} | With Photos: ${data.withPhotos}</div>
+                `;
+
+                galleryDiv.innerHTML = '<div class="gallery-grid">' + data.users.map(user => {
+                    const initials = user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    
+                    if (user.hasPhoto) {
+                        return `
+                            <div class="profile-item" onclick="classifyProfileImage('${user.photo}', '${user.displayName}')" style="cursor: pointer;">
+                                <img src="${user.photo}" alt="${user.displayName}" class="profile-photo" />
+                                <div class="profile-name">${user.displayName}</div>
+                                <div style="font-size: 0.8em; color: #666;">Click to classify</div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="profile-item" style="opacity: 0.5;">
+                                <div class="profile-initials">${initials}</div>
+                                <div class="profile-name">${user.displayName}</div>
+                            </div>
+                        `;
+                    }
+                }).join('') + '</div>';
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <div class="status-icon">❌</div>
+                    <div class="status-message">Failed to load gallery</div>
+                    <div class="status-detail">${error.message}</div>
+                `;
+            }
+        }
+
+        async function classifyProfileImage(imageUrl, userName) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+
+            try {
+                const response = await fetch('/api/classify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl })
+                });
+
+                const result = await response.json();
+                
+                alert(`Classification for ${userName}:\\n\\nClass: ${result.classification}\\nConfidence: ${(result.confidence * 100).toFixed(1)}%`);
+            } catch (error) {
+                alert('Classification failed: ' + error.message);
+            } finally {
+                overlay.classList.remove('active');
+            }
+        }
+
+        async function testClassify() {
+            alert('Use the Production tab to run full classification on all profiles');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            
+            // Ensure production view is shown on load
+            document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
+            document.getElementById('productionView').classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('productionBtn').classList.add('active');
+            
+            // Setup navigation button event listeners
+            document.getElementById('productionBtn').addEventListener('click', () => switchView('production'));
+            document.getElementById('reportsBtn').addEventListener('click', () => switchView('reports'));
+            document.getElementById('developmentBtn').addEventListener('click', () => switchView('development'));
+            
+            // Setup Production view event listeners
+            document.getElementById('runClassificationBtn').addEventListener('click', runClassification);
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => filterGallery(e.target.dataset.filter));
+            });
+            
+            // Setup Reports view event listeners
+            document.getElementById('nonHumanReportBtn').addEventListener('click', loadNonHumanReport);
+            document.getElementById('misclassificationReportBtn').addEventListener('click', loadMisclassificationReport);
+            
+            // Setup Development view event listeners
+            document.getElementById('checkHealthBtn').addEventListener('click', checkHealth);
+            document.getElementById('countUsersBtn').addEventListener('click', countTenantUsers);
+            document.getElementById('loadGalleryBtn').addEventListener('click', loadGallery);
+            document.getElementById('testClassifyBtn').addEventListener('click', testClassify);
+            
+            // Wait for Chart.js to load before initializing chart
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js loaded, version:', Chart.version);
+                loadWeeklyChart();
+            } else {
+                console.log('Chart.js not loaded yet, waiting...');
+                // Retry after a short delay
+                setTimeout(function() {
+                    if (typeof Chart !== 'undefined') {
+                        console.log('Chart.js loaded on retry, version:', Chart.version);
+                        loadWeeklyChart();
+                    } else {
+                        console.error('Chart.js failed to load!');
+                        const chartContainer = document.getElementById('weeklyChart')?.parentElement;
+                        if (chartContainer) {
+                            chartContainer.innerHTML = '<p style="color: #f44336; padding: 20px; text-align: center;">Chart.js library failed to load. Please check your internet connection and refresh.</p>';
+                        }
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

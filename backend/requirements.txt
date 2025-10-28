@@ -1,0 +1,5 @@
+Flask
+flask-cors
+gunicorn
+Pillow
+numpy<2.0

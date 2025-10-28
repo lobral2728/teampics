@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Machine Learning Models (large binary files)
+*.h5
+*.keras
+*.weights.h5
+*.pb
+*.ckpt
+*.safetensors
+model/
+models/
+*.pkl
+*.pickle
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.secret
+secrets/
+secrets.json
+credentials.json
+
+# Azure & Cloud
+*.publishsettings
+*.azureProfile
+.azure/
+
+# Terraform (covered in terraform/.gitignore but adding here for safety)
+*.tfvars
+*.tfvars.json
+!terraform.tfvars.example
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
