@@ -236,3 +236,4 @@ The trained ML models (90-100MB each) are excluded from git. For deployment:
 ## License
 
 MIT
+# profile_pic_app
